@@ -10,10 +10,10 @@ def get_resnet(resnet_version='resnet18', num_classes=10, pretrained=False):
     :param pretrained: Boolean argument
     :return: Torch model
     """
-    model = torch.hub.load('pytorch/vision:v0.10.0',
+    model = torch.hub.load('pytorch/vision',
                            resnet_version,
                            pretrained=pretrained)
-    model.fc = nn.Linear(in_features=512,
+    model.fc = nn.Linear(in_features=model.fc.in_features,
                          out_features=num_classes,
                          bias=True)
 
