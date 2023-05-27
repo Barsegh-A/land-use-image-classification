@@ -2,13 +2,15 @@ import torch
 import numpy as np
 from tqdm import tqdm
 from pathlib import Path
+from datetime import datetime
 
 
 class TrainEval:
     """
     Class for creating training and evaluating functions in more compact way
     """
-    def __init__(self, epochs, model, train_dataloader, val_dataloader, optimizer, criterion, device, model_name):
+    def __init__(self, epochs, model, train_dataloader, val_dataloader, optimizer, criterion, device, model_name,
+                 save_dir=None):
         """
         :param epochs: Numer of epochs to train model
         :param model: Torch model object
@@ -29,6 +31,10 @@ class TrainEval:
         self.model_name = model_name
         self.train_losses = []
         self.val_losses = []
+
+        self.save_dir = save_dir or Path(__file__).parent.parent.resolve() / 'models'
+
+        self.save_dir.mkdir(exist_ok=True)
 
     def train_fn(self, current_epoch):
         """
@@ -91,6 +97,8 @@ class TrainEval:
         train_losses = []
         val_losses = []
 
+        start_time = str(datetime.now()).replace(' ', '_')
+
         for i in range(self.epoch):
             train_loss = self.train_fn(i)
             val_loss = self.eval_fn(i)
@@ -99,7 +107,7 @@ class TrainEval:
             val_losses.append(val_loss)
 
             if val_loss < best_valid_loss:
-                save_path = Path(__file__).parent.parent.resolve() / 'models' / f"{self.model_name}_best_weights.pt"
+                save_path = self.save_dir / f"{self.model_name}_{start_time}_best_weights.pt"
                 torch.save(self.model.state_dict(), save_path)
                 print("Saved Best Weights")
                 best_valid_loss = val_loss

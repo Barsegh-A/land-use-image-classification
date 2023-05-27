@@ -12,19 +12,18 @@ from torchvision.datasets import ImageFolder
 from torch.utils.data import DataLoader
 
 
-
 def parse_args():
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
-        '--data_path',
+        '--data-path',
         type=str,
         default='./data/UCMerced_LandUse/Images',
         help='Path to dataset',
     )
 
     parser.add_argument(
-        '--output_path',
+        '--output-path',
         type=str,
         default='./data/UCMerced_LandUse_processed',
         help='Path to processed dataset',
@@ -58,9 +57,7 @@ def parse_args():
         help='Height of a single image before processing',
     )
 
-    args = parser.parse_args()
-    return args
-
+    return parser.parse_args()
 
 
 def main(args):
@@ -119,7 +116,6 @@ def main(args):
 
     with open(output_path / 'image_labels.json', 'w') as json_file:
         json.dump(json_data, json_file) # indent = 4
-
 
 
 if __name__ == '__main__':
