@@ -11,7 +11,7 @@ def get_multilabel_resnet(resnet_version='resnet18', num_classes=10, weights=Non
     :return: Torch model
     """
 
-    model = torch.hub.load('pytorch/vision',
+    model = torch.hub.load('pytorch/vision:v0.14.0',
                            resnet_version,
                            weights=weights)
     model.fc = nn.Linear(in_features=model.fc.in_features,

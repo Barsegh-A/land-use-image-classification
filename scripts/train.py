@@ -39,7 +39,7 @@ def get_train_val_loader(data_path, train_portion=0.8, batch_size=64, seed=42):
     dataset = LandUseImagesDataset(data_path,
                                    transform=T.Compose([T.Resize(256), T.ToTensor()]))
 
-    train, val = random_split(dataset, [train_portion, 1-train_portion])
+    train, val = random_split(dataset, [train_portion, 1.0 - train_portion], generator=generator)
     train_loader = DataLoader(train, batch_size=batch_size, shuffle=True, drop_last=True, generator=generator)
     val_loader = DataLoader(val, batch_size=batch_size, generator=generator)
 
