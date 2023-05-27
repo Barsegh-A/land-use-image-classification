@@ -30,5 +30,4 @@ class LandUseImagesDataset(Dataset):
 
         if self.transform is not None:
             image = self.transform(image)
-
-        return image, torch.tensor(label)
+        return image, torch.tensor(label).type(torch.float)
