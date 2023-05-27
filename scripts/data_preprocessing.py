@@ -113,6 +113,7 @@ def main(args):
 
     json_data = {
         'mapping': idx_to_class,
+        'extension': args.extension,
         'images': images_labels_array
     }
 
