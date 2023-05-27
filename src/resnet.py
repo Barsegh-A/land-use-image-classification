@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 
-def get_resnet(resnet_version='resnet18', num_classes=10, pretrained=False):
+def get_multilabel_resnet(resnet_version='resnet18', num_classes=10, pretrained=False):
     """
      Function which returns modified ResNet network for multilabel classification
     :param resnet_version: Version of ResNet, ex. 'resnet18'
