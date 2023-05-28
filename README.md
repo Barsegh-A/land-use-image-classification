@@ -37,7 +37,7 @@ Download [UCMerced_LandUse](http://weegee.vision.ucmerced.edu/datasets/landuse.h
     - Images with augmentation will be saved with names `<image_id>_aff`, `<image_id>_pers` or `<image_id>_aff_pers` Corresponding `image_labels.json` will be created.
 
 
-###Training
+### Training
   Use  `train.py` to train a model. Different ResNet and DenseNet models are supported. Best model is saved in `models` folder. 
 
   ```
@@ -55,7 +55,7 @@ Download [UCMerced_LandUse](http://weegee.vision.ucmerced.edu/datasets/landuse.h
     tensorboard --logdir=runs
     ```
     
-###Inference
+### Inference
 
   Use `inference.py` for an inference of a single image.
 
