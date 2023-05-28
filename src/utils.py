@@ -12,7 +12,7 @@ class TrainEval:
     Class for creating training and evaluating functions in more compact way
     """
     def __init__(self, epochs, model, train_dataloader, val_dataloader, optimizer, criterion, device, model_name,
-                 save_dir=None):
+                 save_dir=None, writer=None):
         """
         :param epochs: Numer of epochs to train model
         :param model: Torch model object
@@ -22,6 +22,7 @@ class TrainEval:
         :param criterion: Torch object to compute loss
         :param device: Torch device object (giving option to use GPU)
         :param model_name: Name of the model, is used when saving model params
+        :param writer: tensorboard SummaryWriter
         """
         self.model = model
         self.train_dataloader = train_dataloader
@@ -33,6 +34,7 @@ class TrainEval:
         self.model_name = model_name
         self.train_losses = []
         self.val_losses = []
+        self.writer = writer
 
         self.save_dir = save_dir or Path(__file__).parent.parent.resolve() / 'models'
 
@@ -60,6 +62,9 @@ class TrainEval:
             loss.backward()
             self.optimizer.step()
 
+            if self.writer:
+                self.writer.add_scalar('training loss', loss.item(), current_epoch * len(self.train_dataloader) + t)
+
             total_loss += loss.item()
             tk.set_postfix({"Loss": "%6f" % float(total_loss / (t + 1))})
 
@@ -85,6 +90,9 @@ class TrainEval:
 
             total_loss += loss.item()
             tk.set_postfix({"Loss": "%6f" % float(total_loss / (t + 1))})
+
+        if self.writer:
+            self.writer.add_scalar('validation loss', loss.item(), current_epoch)
 
         return total_loss / len(self.val_dataloader)
 

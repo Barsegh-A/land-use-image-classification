@@ -8,7 +8,7 @@ from src.utils import TrainEval
 from src.dataset import LandUseImagesDataset
 
 from torch.utils.data import DataLoader, Dataset, random_split
-
+from torch.utils.tensorboard import SummaryWriter
 
 def get_objects_for_training(model_name, learning_rate=None, num_classes=None):
     """
@@ -117,6 +117,12 @@ def parse_args(*argument_array):
         help='Image height'
     )
 
+    parser.add_argument(
+        '--tensorboard',
+        action='store_true',
+        help='Whether to use tensorboard'
+    )
+
     return parser.parse_args(*argument_array)
 
 
@@ -133,6 +139,11 @@ def main():
                                                            learning_rate=args.lr,
                                                            num_classes=args.num_classes)
 
+
+    writer = None
+    if args.tensorboard:
+        writer = SummaryWriter(f'runs/{args.model}')
+
     tr_eval = TrainEval(model=model,
                         model_name=args.model,
                         optimizer=optimizer,
@@ -140,7 +151,8 @@ def main():
                         train_dataloader=train_loader,
                         val_dataloader=validation_loader,
                         epochs=args.epochs,
-                        device=torch.device(args.device))
+                        device=torch.device(args.device),
+                        writer=writer)
 
     tr_eval.train()
 
