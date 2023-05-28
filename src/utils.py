@@ -128,7 +128,7 @@ class TrainEval:
         train_losses = []
         val_losses = []
 
-        start_time = str(datetime.now()).replace(' ', '_')
+        start_time = str(datetime.now()).replace(' ', '_').split('.')[0].replace(':', '-')
 
         for i in range(self.epoch):
             train_loss = self.train_fn(i)
