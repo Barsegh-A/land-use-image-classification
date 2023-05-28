@@ -122,6 +122,14 @@ class TrainEval:
 
 
 def inference(image_path, model, transform=None, threshold=0.5):
+    """
+    inference on a single image
+    :param image_path: path to the image
+    :param model: model used for inference
+    :param transform: torch.transform applied to the image
+    :param threshold: threshold for the prediction
+    :return: labels returned by model
+    """
     image = Image.open(image_path)
 
     if transform is not None:
@@ -135,4 +143,9 @@ def inference(image_path, model, transform=None, threshold=0.5):
     return output
 
 def get_labels(predictions, threshold):
+    """
+    :param predictions: model prediction
+    :param threshold: threshold for the prediction
+    :return: labels with corresponding probabilities greater than the threshold
+    """
     return [[label for label, score in zip(CLASSES, prediction) if score > threshold] for prediction in predictions]

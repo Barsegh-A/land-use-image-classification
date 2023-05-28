@@ -2,7 +2,7 @@ import adddeps
 
 import torch
 import argparse
-from src.resnet import get_multilabel_resnet
+from src.models import get_multilabel_model
 import torchvision.transforms as T
 from src.utils import TrainEval
 from src.dataset import LandUseImagesDataset
@@ -18,14 +18,14 @@ def get_objects_for_training(model_name, learning_rate=None, num_classes=None):
     :param num_classes: Number of classes in classification
     :return: Objects of (model, optimizer, loss function)
     """
-    model = get_multilabel_resnet(model_name, num_classes=num_classes)
+    model = get_multilabel_model(model_name, num_classes=num_classes)
     optimizer = torch.optim.Adam(params=model.parameters(), lr=learning_rate)
     criterion = torch.nn.BCELoss()
 
     return model, optimizer, criterion
 
 
-def get_train_val_loader(data_path, train_portion=0.8, batch_size=64, seed=42):
+def get_train_val_loader(data_path, train_portion=0.8, batch_size=64, seed=42, width=256, height=256):
     """
     Constructs train and validation loaders
     :param data_path: Path to data
@@ -37,7 +37,7 @@ def get_train_val_loader(data_path, train_portion=0.8, batch_size=64, seed=42):
     generator = torch.Generator()
     generator.manual_seed(seed)
     dataset = LandUseImagesDataset(data_path,
-                                   transform=T.Compose([T.Resize(256), T.ToTensor()]))
+                                   transform=T.Compose([T.Resize((height, width)), T.ToTensor()]))
 
     train, val = random_split(dataset, [train_portion, 1.0 - train_portion], generator=generator)
     train_loader = DataLoader(train, batch_size=batch_size, shuffle=True, drop_last=True, generator=generator)
@@ -102,6 +102,21 @@ def parse_args(*argument_array):
         default=21,
         help='Number of classes in data'
     )
+
+    parser.add_argument(
+        '--width',
+        type=int,
+        default=256,
+        help='Image width'
+    )
+
+    parser.add_argument(
+        '--height',
+        type=int,
+        default=256,
+        help='Image height'
+    )
+
     return parser.parse_args(*argument_array)
 
 
@@ -111,7 +126,9 @@ def main():
     train_loader, validation_loader = get_train_val_loader(args.data,
                                                            train_portion=args.train_portion,
                                                            batch_size=args.batch_size,
-                                                           seed=args.seed)
+                                                           seed=args.seed,
+                                                           width=args.width,
+                                                           height=args.height)
     model, optimizer, criterion = get_objects_for_training(args.model,
                                                            learning_rate=args.lr,
                                                            num_classes=args.num_classes)

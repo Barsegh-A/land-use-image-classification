@@ -6,7 +6,7 @@ import torchvision.transforms as T
 
 from pathlib import Path
 
-from src.resnet import get_multilabel_resnet
+from src.models import get_multilabel_model
 from src.utils import inference
 from src.dataset import CLASSES
 
@@ -16,14 +16,20 @@ def parse_args():
     parser.add_argument(
         '--image-path',
         type=str,
-        default='./data/UCMerced_LandUse_processed/Images/000a431a.jpg',
+        required=True,
         help='Path to an image',
+    )
+
+    parser.add_argument(
+        '--model-name',
+        type=str,
+        help='Name of the model',
     )
 
     parser.add_argument(
         '--model-path',
         type=str,
-        default='./models/resnet18_2023-05-27_18:26:05.712432_best_weights.pt',
+        required=True,
         help='Path to the model',
     )
 
@@ -67,9 +73,13 @@ def main(args):
         T.ToTensor()
     ])
 
-    model_name = args.model_path.split('_')[0].split('/')[-1]
+    model_name = args.model_name
+    if not model_name:
+        model_name = args.model_path.split('_')[0].split('/')[-1]
+
     num_classes = len(CLASSES)
-    model = get_multilabel_resnet(model_name, num_classes=num_classes, weights=None)
+
+    model = get_multilabel_model(model_name, num_classes=num_classes)
 
     model.load_state_dict(torch.load(args.model_path, map_location=args.device))
     model.eval()

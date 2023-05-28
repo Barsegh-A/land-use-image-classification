@@ -14,7 +14,7 @@ Multi-label classification of Land use images. Project for Python course at YSU 
     ```
 
   - ```
-    python scripts/data_preprocessing.py --data_path data/EuroSAT_RGB --width 64 --height 64 --batch_size 64 --output_path data/EuroSAT_RGB_processed
+    python scripts/data_preprocessing.py --data-path data/EuroSAT_RGB --width 64 --height 64 --batch-size 64 --output-path data/EuroSAT_RGB_processed
     ```
 
 - Apply augmentations
