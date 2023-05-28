@@ -4,6 +4,7 @@ from tqdm import tqdm
 from pathlib import Path
 from datetime import datetime
 from PIL import Image
+from sklearn.metrics import f1_score,precision_score,recall_score
 
 from src.dataset import CLASSES
 
@@ -39,6 +40,35 @@ class TrainEval:
         self.save_dir = save_dir or Path(__file__).parent.parent.resolve() / 'models'
 
         self.save_dir.mkdir(exist_ok=True)
+        
+    def f1_metric(self, labels, predictions,threshold=0.5):
+        binary_predictions = (predictions >= threshold).float()
+
+        labels_flat = labels.view(-1)
+        predictions_flat = binary_predictions.view(-1)
+
+        f1 = f1_score(labels_flat.cpu(), predictions_flat.cpu(), average='macro')
+
+        return f1
+    def rec_metric(self,labels,predictions,threshold=0.5):
+         binary_predictions = (predictions >= threshold).float()
+
+         labels_flat = labels.view(-1)
+         predictions_flat = binary_predictions.view(-1)
+
+         precision = recall_score(labels_flat.cpu().numpy(), predictions_flat.cpu().numpy(), average='macro')
+
+         return precision
+        
+    def prec_metric(self,labels,predictions,threshold=0.5):
+        binary_predictions = (predictions >= threshold).float()
+
+        labels_flat = labels.view(-1)
+        predictions_flat = binary_predictions.view(-1)
+
+        precision = precision_score(labels_flat.cpu().numpy(), predictions_flat.cpu().numpy(), average='macro')
+
+        return precision
 
     def train_fn(self, current_epoch):
         """
@@ -90,6 +120,7 @@ class TrainEval:
 
             total_loss += loss.item()
             tk.set_postfix({"Loss": "%6f" % float(total_loss / (t + 1))})
+            print(f"f1:{self.f1_metric(labels,logits)}, recall:{self.rec_metric(labels,logits)},precision:{self.prec_metric(labels,logits)}")
 
         if self.writer:
             self.writer.add_scalar('validation loss', loss.item(), current_epoch)
