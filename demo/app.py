@@ -30,15 +30,15 @@ class App(object):
         self.conf_threshold = 0.5
         self.model = None
         self.classes = []
-        self.input_height = 512
-        self.input_width = 512
+        self.input_height = 256
+        self.input_width = 256
 
-    def process_image(self, bytes_array):
+    def process_image(self, uploaded_file):
         transform = T.Compose([
             T.Resize((self.input_height, self.input_width)),
             T.ToTensor()
         ])
-        labels = inference(bytes_array, self.model, transform, self.conf_threshold)
+        labels = inference(uploaded_file, self.model, transform, self.conf_threshold)
         return labels
 
     def create_sidebar(self):
