@@ -1,10 +1,12 @@
 import os
 import argparse
 import json
+import math
 import torch
 import uuid
 import numpy as np
 import torchvision.transforms as T
+from tqdm import tqdm
 
 from pathlib import Path
 from PIL import Image
@@ -16,14 +18,14 @@ def parse_args():
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
-        '--data-path',
+        '--data_path',
         type=str,
         default='./data/UCMerced_LandUse/Images',
         help='Path to dataset',
     )
 
     parser.add_argument(
-        '--output-path',
+        '--output_path',
         type=str,
         default='./data/UCMerced_LandUse_processed',
         help='Path to processed dataset',
@@ -57,6 +59,19 @@ def parse_args():
         help='Height of a single image before processing',
     )
 
+    parser.add_argument(
+        '--batch_size',
+        type=int,
+        default=4,
+        help='Number of images to be combined',
+    )
+
+    parser.add_argument(
+        '--shuffle',
+        action='store_true',
+        help='Shuffle images before processing',
+    )
+
     return parser.parse_args()
 
 
@@ -74,12 +89,10 @@ def main(args):
 
     dataset = ImageFolder(dataset_path, transform=transform)
 
-    batch_size = 4
-
     generator = torch.Generator()
     generator.manual_seed(args.seed)
 
-    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True, generator=generator)
+    dataloader = DataLoader(dataset, batch_size=args.batch_size, shuffle=args.shuffle, generator=generator, drop_last=True)
 
     class_to_idx = dataset.class_to_idx
     idx_to_class = {idx: class_name for class_name, idx in class_to_idx.items()}
@@ -92,15 +105,17 @@ def main(args):
 
     images_labels_array = []
 
-    for idx, (batch_images, batch_labels) in enumerate(dataloader):
+    image_count_on_edge = int(math.sqrt(args.batch_size))
+
+    for idx, (batch_images, batch_labels) in tqdm(enumerate(dataloader), total=len(dataset)):
         batch_images = [toPIL(batch_image) for batch_image in batch_images]
 
-        combined_image = Image.new('RGB', (2 * w, 2 * h))
+        combined_image = Image.new('RGB', (image_count_on_edge * w, image_count_on_edge * h))
 
         image_id = uuid.uuid4().hex[:8]
 
-        for i in range(batch_size):
-            combined_image.paste(batch_images[i], (i % 2 * w, i // 2 * h))
+        for i in range(args.batch_size):
+            combined_image.paste(batch_images[i], (i % image_count_on_edge * w, i // image_count_on_edge * h))
 
         one_hot_labels = np.zeros(len(dataset.classes))
         one_hot_labels[batch_labels] = 1
