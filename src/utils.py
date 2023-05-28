@@ -159,7 +159,7 @@ def inference(image_path, model, transform=None, threshold=0.5):
     :param threshold: threshold for the prediction
     :return: labels returned by model
     """
-    image = Image.open(image_path)
+    image = Image.open(image_path).convert('RGB')
 
     if transform is not None:
         image = transform(image).unsqueeze(0)

@@ -24,5 +24,14 @@ Multi-label classification of Land use images. Project for Python course at YSU 
     ```
 
   - **NOTE**:
-    - if sum of **affine_prop** and **perspective_prop**   is greater than 1 both augmentations will be applied on some part of data. In the example above only affine transformation will be applied on 0.3 portion of data, only perspective transformation  will be applied on 0.5 portion of data, both augmentations will be applied on 0.2 portion of dat
+    - If sum of **affine_prop** and **perspective_prop**   is greater than 1 both augmentations will be applied on some part of data. In the example above only affine transformation will be applied on 0.3 portion of data, only perspective transformation  will be applied on 0.5 portion of data, both augmentations will be applied on 0.2 portion of data
     - Images with augmentation will be saved with names `<image_id>_aff`, `<image_id>_pers` or `<image_id>_aff_pers` Corresponding `image_labels.json` will be created.
+
+### Demo
+
+Run demo with following command
+
+```
+streamlit run demo/app.py
+```
+
