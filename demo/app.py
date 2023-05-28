@@ -70,7 +70,7 @@ class App(object):
     def create_main_container(self):
         st.title('Land use multilabel classification')
         with st.form('classification form'):
-            uploaded_files = st.file_uploader('Choose files', accept_multiple_files=True, type=['jpg', 'png'])
+            uploaded_files = st.file_uploader('Choose files', accept_multiple_files=True, type=['jpg', 'png', 'tif'])
             submitted = st.form_submit_button("Process")
             if submitted:
                 if len(uploaded_files) > 0:
