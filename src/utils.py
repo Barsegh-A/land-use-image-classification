@@ -3,7 +3,9 @@ import numpy as np
 from tqdm import tqdm
 from pathlib import Path
 from datetime import datetime
+from PIL import Image
 
+from src.dataset import CLASSES
 
 class TrainEval:
     """
@@ -117,3 +119,20 @@ class TrainEval:
 
         self.train_losses = train_losses
         self.val_losses = val_losses
+
+
+def inference(image_path, model, transform=None, threshold=0.5):
+    image = Image.open(image_path)
+
+    if transform is not None:
+        image = transform(image).unsqueeze(0)
+
+    with torch.no_grad():
+        output = model(image)
+
+    output = get_labels(output, threshold)
+
+    return output
+
+def get_labels(predictions, threshold):
+    return [[label for label, score in zip(CLASSES, prediction) if score > threshold] for prediction in predictions]
