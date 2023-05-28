@@ -18,14 +18,14 @@ def parse_args():
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
-        '--data_path',
+        '--data-path',
         type=str,
         default='./data/UCMerced_LandUse/Images',
         help='Path to dataset',
     )
 
     parser.add_argument(
-        '--output_path',
+        '--output-path',
         type=str,
         default='./data/UCMerced_LandUse_processed',
         help='Path to processed dataset',
@@ -60,7 +60,7 @@ def parse_args():
     )
 
     parser.add_argument(
-        '--batch_size',
+        '--batch-size',
         type=int,
         default=4,
         help='Number of images to be combined',
