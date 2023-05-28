@@ -99,7 +99,7 @@ def randomPerspective(image, seed):
     """
     torch.manual_seed(seed)
 
-    border = (80, 80, 00, 80)
+    border = (80, 80, 80, 80)
     image_with_border = cv2.copyMakeBorder(image, *border, cv2.BORDER_REFLECT, None).astype(np.uint8)
     h, w, _ = image_with_border.shape
 
