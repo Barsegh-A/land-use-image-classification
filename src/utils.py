@@ -4,9 +4,9 @@ from tqdm import tqdm
 from pathlib import Path
 from datetime import datetime
 from PIL import Image
-from sklearn.metrics import f1_score,precision_score,recall_score
 
 from src.dataset import CLASSES
+from src.metrics import get_metric
 
 class TrainEval:
     """
@@ -40,35 +40,6 @@ class TrainEval:
         self.save_dir = save_dir or Path(__file__).parent.parent.resolve() / 'models'
 
         self.save_dir.mkdir(exist_ok=True)
-        
-    def f1_metric(self, labels, predictions,threshold=0.5):
-        binary_predictions = (predictions >= threshold).float()
-
-        labels_flat = labels.view(-1)
-        predictions_flat = binary_predictions.view(-1)
-
-        f1 = f1_score(labels_flat.cpu(), predictions_flat.cpu(), average='macro')
-
-        return f1
-    def rec_metric(self,labels,predictions,threshold=0.5):
-         binary_predictions = (predictions >= threshold).float()
-
-         labels_flat = labels.view(-1)
-         predictions_flat = binary_predictions.view(-1)
-
-         precision = recall_score(labels_flat.cpu().numpy(), predictions_flat.cpu().numpy(), average='macro')
-
-         return precision
-        
-    def prec_metric(self,labels,predictions,threshold=0.5):
-        binary_predictions = (predictions >= threshold).float()
-
-        labels_flat = labels.view(-1)
-        predictions_flat = binary_predictions.view(-1)
-
-        precision = precision_score(labels_flat.cpu().numpy(), predictions_flat.cpu().numpy(), average='macro')
-
-        return precision
 
     def train_fn(self, current_epoch):
         """
@@ -110,20 +81,39 @@ class TrainEval:
         self.model.to(self.device)
         total_loss = 0.0
         tk = tqdm(self.val_dataloader, desc="EPOCH" + "[VALID]" + str(current_epoch + 1) + "/" + str(self.epoch))
+        all_labels = []
+        all_logits = []
 
-        for t, data in enumerate(tk):
-            images, labels = data
-            images, labels = images.to(self.device), labels.to(self.device)
+        with torch.no_grad():
+            for t, data in enumerate(tk):
+                images, labels = data
+                images, labels = images.to(self.device), labels.to(self.device)
 
-            logits = self.model(images)
-            loss = self.criterion(logits, labels)
+                logits = self.model(images)
+                loss = self.criterion(logits, labels)
 
-            total_loss += loss.item()
-            tk.set_postfix({"Loss": "%6f" % float(total_loss / (t + 1))})
-            print(f"f1:{self.f1_metric(labels,logits)}, recall:{self.rec_metric(labels,logits)},precision:{self.prec_metric(labels,logits)}")
+                all_labels.append(labels.numpy())
+                all_logits.append(logits.numpy())
+
+
+                total_loss += loss.item()
+                tk.set_postfix({"Loss": "%6f" % float(total_loss / (t + 1))})
+
+        all_labels = np.concatenate(all_labels)
+        all_logits = np.concatenate(all_logits)
+
+        print(f"f1:{get_metric('f1_score', all_labels, all_logits)}, recall:{get_metric('recall', all_labels, all_logits)}, precision:{get_metric('precision', all_labels, all_logits)}")
 
         if self.writer:
             self.writer.add_scalar('validation loss', loss.item(), current_epoch)
+
+            metrics = ['f1_score', 'recall', 'precision']
+            thresholds = [0.3, 0.4, 0.5, 0.6, 0.7]
+
+            for metric in metrics:
+                for threshold in thresholds:
+                    score = get_metric(metric, all_labels, all_logits, threshold=threshold)
+                    self.writer.add_scalar(f'{metric} on validation set, threshold = {threshold}', score, current_epoch)
 
         return total_loss / len(self.val_dataloader)
 
