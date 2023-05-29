@@ -39,7 +39,9 @@ def get_train_val_loader(data_path, train_portion=0.8, batch_size=64, seed=42, w
     generator = torch.Generator()
     generator.manual_seed(seed)
     dataset = LandUseImagesDataset(data_path,
-                                   transform=T.Compose([T.Resize((height, width)), T.ToTensor()]))
+                                   transform=T.Compose([T.Resize((height, width)), T.ToTensor(),
+                                                        T.Normalize(mean=[0.485, 0.456, 0.406],
+                                                                    std=[0.229, 0.224, 0.225])]))
 
     train, val = random_split(dataset, [train_portion, 1.0 - train_portion], generator=generator)
     train_loader = DataLoader(train, batch_size=batch_size, shuffle=True, drop_last=True, generator=generator)
