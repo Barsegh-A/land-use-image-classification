@@ -1,9 +1,9 @@
-numpy==1.23.0
-torch==1.13.0
-torchvision==0.14.0
-Pillow==9.4.0
 tqdm
 opencv-python
-tensorboard==2.12.0
+numpy==1.23.0
+torch==1.13.0
+Pillow==9.4.0
 streamlit==1.22.0
+torchvision==0.14.0
+tensorboard==2.12.0
 scikit-learn==1.2.0

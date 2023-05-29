@@ -1,16 +1,18 @@
 import adddeps
+import argparse
+from datetime import datetime
 
 import torch
-import argparse
-from src.models import get_multilabel_model
 import torchvision.transforms as T
+from torch.utils.tensorboard import SummaryWriter
+from torch.utils.data import DataLoader, Dataset, random_split
+
 from src.utils import TrainEval
+from src.models import get_multilabel_model
 from src.dataset import LandUseImagesDataset
 
-from torch.utils.data import DataLoader, Dataset, random_split
-from torch.utils.tensorboard import SummaryWriter
 
-def get_objects_for_training(model_name, learning_rate=None, num_classes=None):
+def get_objects_for_training(model_name, learning_rate=None, num_classes=None, weights=None):
     """
     Constructs model, optimizer and loss function objects.
     :param model_name: Model name(currently only resnet models)
@@ -18,7 +20,7 @@ def get_objects_for_training(model_name, learning_rate=None, num_classes=None):
     :param num_classes: Number of classes in classification
     :return: Objects of (model, optimizer, loss function)
     """
-    model = get_multilabel_model(model_name, num_classes=num_classes)
+    model = get_multilabel_model(model_name, num_classes=num_classes, weights=weights)
     optimizer = torch.optim.Adam(params=model.parameters(), lr=learning_rate)
     criterion = torch.nn.BCELoss()
 
@@ -48,6 +50,7 @@ def get_train_val_loader(data_path, train_portion=0.8, batch_size=64, seed=42, w
 
 def parse_args(*argument_array):
     parser = argparse.ArgumentParser()
+
     parser.add_argument(
         '--model',
         type=str,
@@ -102,25 +105,34 @@ def parse_args(*argument_array):
         default=21,
         help='Number of classes in data'
     )
-
     parser.add_argument(
         '--width',
         type=int,
         default=256,
         help='Image width'
     )
-
     parser.add_argument(
         '--height',
         type=int,
         default=256,
         help='Image height'
     )
-
     parser.add_argument(
         '--tensorboard',
         action='store_true',
         help='Whether to use tensorboard'
+    )
+    parser.add_argument(
+        '--last-state',
+        type=str,
+        default=None,
+        help='Last state to continue from'
+    )
+    parser.add_argument(
+        '--weights',
+        type=str,
+        default=None,
+        help='Name of pretrained weights to use'
     )
 
     return parser.parse_args(*argument_array)
@@ -136,13 +148,16 @@ def main():
                                                            width=args.width,
                                                            height=args.height)
     model, optimizer, criterion = get_objects_for_training(args.model,
+                                                           weights=args.weights,
                                                            learning_rate=args.lr,
                                                            num_classes=args.num_classes)
 
+    if args.last_state:
+        model.load_state_dict(torch.load(args.last_state, map_location=args.device))
 
     writer = None
     if args.tensorboard:
-        writer = SummaryWriter(f'runs/{args.model}')
+        writer = SummaryWriter(f'runs/{args.model}_{str(datetime.now()).replace(" ", "_")}')
 
     tr_eval = TrainEval(model=model,
                         model_name=args.model,

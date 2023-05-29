@@ -1,81 +1,76 @@
+import adddeps
+
 import os
-import argparse
 import json
 import torch
 import uuid
+import argparse
 import numpy as np
-import cv2
 from tqdm import tqdm
-
 from pathlib import Path
-from PIL import Image
+
+import cv2
 import torchvision.transforms as T
 from torch.utils.data import DataLoader
 
-import adddeps
 from src.dataset import LandUseImagesDataset
 from src.transformations import randomAffine, randomPerspective, blend_with_background
+
 
 def parse_args():
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
-        '--data_path',
+        '--data-path',
         type=str,
         default='./data/UCMerced_LandUse_processed',
         help='Path to dataset',
     )
-
     parser.add_argument(
-        '--label_path',
+        '--label-path',
         type=str,
         default='./data/UCMerced_LandUse_processed/image_labels.json',
         help='Path to labels',
     )
-
     parser.add_argument(
-        '--bg_data_path',
+        '--bg-data-path',
         type=str,
         default='./data/EuroSAT_RGB_processed',
         help='Path to dataset containing background images',
     )
-
     parser.add_argument(
-        '--output_path',
+        '--output-path',
         type=str,
         default='./data/UCMerced_LandUse_augmented',
         help='Path to processed dataset',
     )
-
     parser.add_argument(
         '--extension',
         type=str,
         default='jpg',
         help='The extension of processed images. One of jpg, jpeg, png, tif',
     )
-
     parser.add_argument(
         '--seed',
         type=int,
         default=42,
         help='Random seed',
     )
-
     parser.add_argument(
-        '--affine_prop',
+        '--affine-prop',
         type=float,
         default=0.3,
-        help='Propportion of images for affine transformation',
+        help='Proportion of images for affine transformation',
     )
-
     parser.add_argument(
-        '--perspective_prop',
+        '--perspective-prop',
         type=float,
         default=0.3,
-        help='Propportion of images for perspective transformation',
+        help='Proportion of images for perspective transformation',
     )
 
     return parser.parse_args()
+
 
 def main(args):
     generator = torch.Generator()
@@ -102,11 +97,12 @@ def main(args):
     label_path = Path(args.label_path)
     with open(label_path, 'r') as f:
         labels_json_data = json.load(f)
- 
+
     toPIL = T.ToPILImage()
     image_labels = []
 
-    for idx, ((batch_images, batch_lables), (bg_batch_images, _)) in tqdm(enumerate(zip(dataloader, bg_dataloader)), total=dataset_lenght):
+    for idx, ((batch_images, batch_lables), (bg_batch_images, _)) in tqdm(enumerate(zip(dataloader, bg_dataloader)),
+                                                                          total=dataset_lenght):
         image_id = uuid.uuid4().hex[:8]
         image = batch_images[0].numpy()
         bg_image = bg_batch_images[0].numpy()
@@ -115,21 +111,21 @@ def main(args):
         toPIL(blended_image).save(aug_images_path / f'{image_id}.{args.extension}')
 
         curr_labels = batch_lables[0].tolist()
-        image_labels.append({f'{image_id}' : curr_labels})
+        image_labels.append({f'{image_id}': curr_labels})
 
         if persp_idx < idx < affine_idx:
             transfored_image = randomAffine(blended_image, bg_image, idx)
             transfored_image = randomPerspective(transfored_image, idx)
             toPIL(transfored_image).save(aug_images_path / f'{image_id}_aff_persp.{args.extension}')
-            image_labels.append({f'{image_id}_aff_persp' : curr_labels})
+            image_labels.append({f'{image_id}_aff_persp': curr_labels})
         elif idx < affine_idx:
             transfored_image = randomAffine(blended_image, bg_image, idx)
             toPIL(transfored_image).save(aug_images_path / f'{image_id}_aff.{args.extension}')
-            image_labels.append({f'{image_id}_aff' : curr_labels})
+            image_labels.append({f'{image_id}_aff': curr_labels})
         elif idx > persp_idx:
             transfored_image = randomPerspective(blended_image, idx)
             toPIL(transfored_image).save(aug_images_path / f'{image_id}_persp.{args.extension}')
-            image_labels.append({f'{image_id}_persp' : curr_labels})
+            image_labels.append({f'{image_id}_persp': curr_labels})
 
     aug_json_data = {
         'mapping': labels_json_data['mapping'],
@@ -138,6 +134,7 @@ def main(args):
     }
     with open(output_path / label_path.name, 'w') as f:
         json.dump(aug_json_data, f)
+
 
 if __name__ == '__main__':
     args = parse_args()

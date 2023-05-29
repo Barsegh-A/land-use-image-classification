@@ -1,13 +1,14 @@
 import json
-import torch
-
 from pathlib import Path
+
+import torch
 from PIL import Image
 from torch.utils.data import Dataset
 
 CLASSES = ['agricultural', 'airplane', 'baseballdiamond', 'beach', 'buildings', 'chaparral', 'denseresidential',
            'forest', 'freeway', 'golfcourse', 'harbor', 'intersection', 'mediumresidential', 'mobilehomepark',
            'overpass', 'parkinglot', 'river', 'runway', 'sparseresidential', 'storagetanks', 'tenniscourt']
+
 
 class LandUseImagesDataset(Dataset):
     def __init__(self, root_dir, transform=None):

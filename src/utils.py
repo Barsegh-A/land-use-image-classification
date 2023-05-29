@@ -1,12 +1,14 @@
-import torch
-import numpy as np
-from tqdm import tqdm
 from pathlib import Path
 from datetime import datetime
+
+import torch
+import numpy as np
 from PIL import Image
+from tqdm import tqdm
 
 from src.dataset import CLASSES
 from src.metrics import get_metric
+
 
 class TrainEval:
     """
@@ -92,17 +94,21 @@ class TrainEval:
                 logits = self.model(images)
                 loss = self.criterion(logits, labels)
 
-                all_labels.append(labels.numpy())
-                all_logits.append(logits.numpy())
-
+                all_labels.append(labels.to(torch.device('cpu')).numpy())
+                all_logits.append(logits.to(torch.device('cpu')).numpy())
 
                 total_loss += loss.item()
                 tk.set_postfix({"Loss": "%6f" % float(total_loss / (t + 1))})
 
-        all_labels = np.concatenate(all_labels)
-        all_logits = np.concatenate(all_logits)
-
-        print(f"f1:{get_metric('f1_score', all_labels, all_logits)}, recall:{get_metric('recall', all_labels, all_logits)}, precision:{get_metric('precision', all_labels, all_logits)}")
+                if t == len(tk) - 1:
+                    all_labels = np.concatenate(all_labels)
+                    all_logits = np.concatenate(all_logits)
+                    tk.set_postfix({
+                        'Loss': "%6f" % float(total_loss / (t + 1)),
+                        'f1': get_metric('f1_score', all_labels, all_logits),
+                        'recall': get_metric('recall', all_labels, all_logits),
+                        'precision': get_metric('precision', all_labels, all_logits)
+                    })
 
         if self.writer:
             self.writer.add_scalar('validation loss', loss.item(), current_epoch)
@@ -143,6 +149,10 @@ class TrainEval:
                 print("Saved Best Weights")
                 best_valid_loss = val_loss
                 best_train_loss = train_loss
+
+        save_path = self.save_dir / f"{self.model_name}_{start_time}_last_weights.pt"
+        torch.save(self.model.state_dict(), save_path)
+
         print(f"Training Loss : {best_train_loss}")
         print(f"Valid Loss : {best_valid_loss}")
 
@@ -170,6 +180,7 @@ def inference(image_path, model, transform=None, threshold=0.5):
     output = get_labels(output, threshold)
 
     return output
+
 
 def get_labels(predictions, threshold):
     """
