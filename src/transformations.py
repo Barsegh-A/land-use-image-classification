@@ -6,6 +6,7 @@ import torchvision.transforms as T
 
 toPIL = T.ToPILImage()
 
+
 def get_gradient_2d(start, end, width, height, is_horizontal):
     """
     Generate a 2D gradient array
@@ -21,6 +22,7 @@ def get_gradient_2d(start, end, width, height, is_horizontal):
         return np.tile(np.linspace(start, end, width), (height, 1))
     else:
         return np.tile(np.linspace(start, end, height), (width, 1)).T
+
 
 def get_gradient_3d(width, height, start_list, end_list, is_horizontal_list):
     """
@@ -38,6 +40,7 @@ def get_gradient_3d(width, height, start_list, end_list, is_horizontal_list):
         result[:, :, i] = get_gradient_2d(start, end, width, height, is_horizontal)
 
     return result
+
 
 def create_cross_mask_3d(height, width, d):
     """
@@ -58,6 +61,7 @@ def create_cross_mask_3d(height, width, d):
     mask_v[h_c: h_c + d, :width] = get_gradient_3d(width, d, start, end, (False, False, False))
     return np.minimum(mask_h, mask_v)
 
+
 def create_bounding_mask_3d(height, width, d):
     """
     Creates a 3D bounding mask
@@ -77,6 +81,7 @@ def create_bounding_mask_3d(height, width, d):
     mask_v[height - d:height, :width] = get_gradient_3d(width, d, end, start, (False, False, False))
     return np.minimum(mask_h, mask_v)
 
+
 def blend_with_background(image, bg_image):
     """
     Blends image's central cross lines with background
@@ -85,10 +90,11 @@ def blend_with_background(image, bg_image):
     :return: Blended image
     """
 
-    blured_bg_image = cv2.GaussianBlur(bg_image,(21,21),cv2.BORDER_DEFAULT)
+    blured_bg_image = cv2.GaussianBlur(bg_image, (21, 21), cv2.BORDER_DEFAULT)
     mask = create_cross_mask_3d(image.shape[0], image.shape[1], 32)
     blended_image = mask / 255 * image + (1 - mask / 255) * blured_bg_image
     return blended_image.astype(np.uint8)
+
 
 def randomPerspective(image, seed):
     """
@@ -125,12 +131,17 @@ def randomAffine(image, bg_image, seed):
     bounding_mask = create_bounding_mask_3d(h, w, 32).astype(np.uint8)
 
     affine_transfomer = T.RandomAffine(degrees=(20, 70), translate=(0.0, 0.0), scale=(1.0, 1.0), shear=(0, 30))
-    params = affine_transfomer.get_params(affine_transfomer.degrees, affine_transfomer.translate, affine_transfomer.scale, affine_transfomer.shear, (h, w))
+    params = affine_transfomer.get_params(affine_transfomer.degrees, affine_transfomer.translate,
+                                          affine_transfomer.scale, affine_transfomer.shear, (h, w))
 
-    image_with_border = np.array(T.functional.affine(toPIL(image_with_border), angle=params[0], translate=params[1], scale=params[2], shear=params[3]))
-    bounding_mask = np.array(T.functional.affine(toPIL(bounding_mask), angle=params[0], translate=params[1], scale=params[2], shear=params[3]))
+    image_with_border = np.array(
+        T.functional.affine(toPIL(image_with_border), angle=params[0], translate=params[1], scale=params[2],
+                            shear=params[3]))
+    bounding_mask = np.array(
+        T.functional.affine(toPIL(bounding_mask), angle=params[0], translate=params[1], scale=params[2],
+                            shear=params[3]))
 
-    blured_bg_image = cv2.GaussianBlur(bg_image,(21,21),cv2.BORDER_DEFAULT)
+    blured_bg_image = cv2.GaussianBlur(bg_image, (21, 21), cv2.BORDER_DEFAULT)
     resizedbg = cv2.resize(blured_bg_image, (h, w))
 
     transformed_image = bounding_mask / 255 * image_with_border + (1 - bounding_mask / 255) * resizedbg

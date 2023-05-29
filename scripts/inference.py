@@ -1,14 +1,15 @@
 import adddeps
 
 import argparse
+from pathlib import Path
+
 import torch
 import torchvision.transforms as T
-
-from pathlib import Path
 
 from src.models import get_multilabel_model
 from src.utils import inference
 from src.dataset import CLASSES
+
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -19,41 +20,35 @@ def parse_args():
         required=True,
         help='Path to an image',
     )
-
     parser.add_argument(
         '--model-name',
         type=str,
         help='Name of the model',
     )
-
     parser.add_argument(
         '--model-path',
         type=str,
         required=True,
         help='Path to the model',
     )
-
     parser.add_argument(
         '--device',
         type=str,
         default='cpu',
         help='Device name to use when training model'
     )
-
     parser.add_argument(
         '--threshold',
         type=float,
         default=0.5,
         help='Threshold for prediction',
     )
-
     parser.add_argument(
         '--width',
         type=int,
         default=256,
         help='Width of a single image before processing',
     )
-
     parser.add_argument(
         '--height',
         type=int,

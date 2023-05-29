@@ -1,17 +1,17 @@
 import os
-import argparse
 import json
 import math
-import torch
 import uuid
-import numpy as np
-import torchvision.transforms as T
-from tqdm import tqdm
-
+import argparse
 from pathlib import Path
+
+import torch
+import numpy as np
 from PIL import Image
-from torchvision.datasets import ImageFolder
+from tqdm import tqdm
+import torchvision.transforms as T
 from torch.utils.data import DataLoader
+from torchvision.datasets import ImageFolder
 
 
 def parse_args():
@@ -23,49 +23,42 @@ def parse_args():
         default='./data/UCMerced_LandUse/Images',
         help='Path to dataset',
     )
-
     parser.add_argument(
         '--output-path',
         type=str,
         default='./data/UCMerced_LandUse_processed',
         help='Path to processed dataset',
     )
-
     parser.add_argument(
         '--extension',
         type=str,
         default='jpg',
         help='The extension of processed images. One of jpg, jpeg, png, tif',
     )
-
     parser.add_argument(
         '--seed',
         type=int,
         default=42,
         help='Random seed',
     )
-
     parser.add_argument(
         '--width',
         type=int,
         default=256,
         help='Width of a single image before processing',
     )
-
     parser.add_argument(
         '--height',
         type=int,
         default=256,
         help='Height of a single image before processing',
     )
-
     parser.add_argument(
         '--batch-size',
         type=int,
         default=4,
         help='Number of images to be combined',
     )
-
     parser.add_argument(
         '--shuffle',
         action='store_true',
@@ -92,7 +85,8 @@ def main(args):
     generator = torch.Generator()
     generator.manual_seed(args.seed)
 
-    dataloader = DataLoader(dataset, batch_size=args.batch_size, shuffle=args.shuffle, generator=generator, drop_last=True)
+    dataloader = DataLoader(dataset, batch_size=args.batch_size, shuffle=args.shuffle,
+                            generator=generator, drop_last=True)
 
     class_to_idx = dataset.class_to_idx
     idx_to_class = {idx: class_name for class_name, idx in class_to_idx.items()}
@@ -130,7 +124,7 @@ def main(args):
     }
 
     with open(output_path / 'image_labels.json', 'w') as json_file:
-        json.dump(json_data, json_file) # indent = 4
+        json.dump(json_data, json_file)
 
 
 if __name__ == '__main__':

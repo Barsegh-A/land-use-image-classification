@@ -1,16 +1,16 @@
 import adddeps
-
-import streamlit as st
-import cv2
 import io
 import re
-import numpy as np
+
+import cv2
 import torch
+import streamlit as st
 import torchvision.transforms as T
 
+from src.utils import inference
 from src.dataset import CLASSES
 from src.models import get_multilabel_model
-from src.utils import inference
+
 
 def load_model(model_file, model_path):
     out = re.findall("[a-z]*net[0-9]*", model_path)
@@ -24,6 +24,7 @@ def load_model(model_file, model_path):
     model.load_state_dict(torch.load(model_file, map_location='cpu'))
     model.eval()
     return model
+
 
 class App(object):
     def __init__(self):
@@ -70,7 +71,8 @@ class App(object):
     def create_main_container(self):
         st.title('Land use multilabel classification')
         with st.form('classification form'):
-            uploaded_files = st.file_uploader('Choose files', accept_multiple_files=True, type=['jpg', 'png', 'tif'])
+            uploaded_files = st.file_uploader('Choose files', accept_multiple_files=True,
+                                              type=['jpg', 'png', 'tif', 'jpeg'])
             submitted = st.form_submit_button("Process")
             if submitted:
                 if len(uploaded_files) > 0:
@@ -88,6 +90,7 @@ class App(object):
     def run(self):
         self.create_sidebar()
         self.create_main_container()
+
 
 if __name__ == '__main__':
     app = App()
