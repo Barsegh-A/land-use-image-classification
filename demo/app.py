@@ -37,7 +37,9 @@ class App(object):
     def process_image(self, uploaded_file):
         transform = T.Compose([
             T.Resize((self.input_height, self.input_width)),
-            T.ToTensor()
+            T.ToTensor(),
+            T.Normalize(mean=[0.485, 0.456, 0.406],
+                        std=[0.229, 0.224, 0.225])
         ])
         labels = inference(uploaded_file, self.model, transform, self.conf_threshold)
         return labels
