@@ -48,7 +48,7 @@ As a result `OUTPUT_PATH` will be created with following structure
     - `combined_img1.jpg`
     - `combined_img2.jpg`
     - .........
-  - `image_lables.json`
+  - `image_labels.json`
 
 `image_labels.json` contains labels(as one-hot vector) for created images.
 
